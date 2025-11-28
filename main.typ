@@ -6,6 +6,7 @@
 }
 #show heading.where(level: 1): set align(center)
 #set math.equation(numbering: "(1)")
+#let nonum(eq) = math.equation(block: true, numbering: none, eq)
 = Preparation of Gaussian wave packets for the Schwinger model in 1 + 1 dimensions
 
 For the Schwinger model with the $theta$-term in
@@ -58,23 +59,11 @@ $ <anticommutator>
 
 From the Jordan-Wigner transformation, these creation operators could be represented as:
 $
-  chi_n = (product_(l<n) - i Z_l) (X_n - i Y_n) \
-  chi^dagger_n = (product_(l<n) i Z_l) (X_n + i Y_n)
+  chi_n = (product_(l<n) - i Z_l) (X_n - i Y_n)/2 \
+  chi^dagger_n = (product_(l<n) i Z_l) (X_n + i Y_n)/2
 $
 
-Which obeys @anticommutator:
-1. For $n = m$ the $Z$ strings cancel and the resulting expression is:
-  $
-    {chi_n, chi^dagger_n} = 1/2 {(X_n - i Y_n), (X_n + i Y_n)} \
-  $
-2. We can then solve using Pauli matrices:
-  $
-    (X - i Y)/2 = mat(0,1;0,0),
-    (X + i Y)/2 = mat(0,0;0,1)\
-    1/2 ((X - i Y) (X + i Y) + (X + i Y) (X - i Y)) = mat(1,0;0,1)\
-    "therefore" chi_n chi^dagger_n + chi^dagger_n chi_n = 1\
-    "and" chi_n chi^dagger_m + chi^dagger_m chi_n = 0
-  $
+Which obeys @anticommutator and is shown in @anticommutator-proof.
 
 Now that we have the creation and annihilation operators, we can create a pair of operators that both act on $ket("vac")$ to create a Gaussian wave packet of either fermions or anti-fermions.
 
@@ -200,9 +189,11 @@ $
 == VQE for the Schwinger model
 <schwinger-vqe>
 Using the Jordan-Wigner transformations, we can rewrite the fermions in terms of spin variables like:
-$
-  chi_n = (product_(l<n) - i Z_l) (X_n - i Y_n)/(2)
-$
+#nonum[
+  $
+    chi_n = (product_(l<n) - i Z_l) (X_n - i Y_n)/(2)
+  $
+]
 
 and as in @chakraborty2022:
 $
@@ -228,6 +219,92 @@ Using this Hamiltonian, we can use the VQE to find it's ground state.
   - Repeat steps 2 and 3 until convergence at a minimum.
 
 Our ground state is then defined as $ket(psi(theta_"min"))$.
+
+== Anti-commutation relation for the creation and annihilation operators
+<anticommutator-proof>
+
+Our creation and annihilation operators are:
+#nonum[
+  $
+    chi_n = (product_(l<n) - i Z_l) (X_n - i Y_n)/2 \
+    chi^dagger_n = (product_(l<n) i Z_l) (X_n + i Y_n)/2
+  $
+]
+
+And we require that:
+#nonum[
+  $
+    {chi_n, chi^dagger_m} = delta_(n m)
+  $
+]
+
+Let's simplify the expression slightly, defining $P_n$ and $P^dagger_n$:
+$
+  P_n &= product_(l<n) - i Z_l\
+  P^dagger_m &= product_(l<m) i Z_l
+$
+
+Substituting in:
+$
+  {chi_n, chi^dagger_m} = chi_n chi^dagger_m + chi^dagger_m chi_n\
+  = (P_n (X_n - i Y_n)/2) (P^dagger_m (X_m + i Y_m)/2) + (P^dagger_m (X_m + i Y_m)/2) (P_n (X_n - i Y_n)/2)\
+
+  "and since:"\
+
+  {Z_n, (X_n - i Y_n)/2} = mat(1,0;0,-1) mat(0,0;1,0) + mat(0,0;1,0) mat(1,0;0,-1) = mat(0,0;-1,0) + mat(0,0;1,0) = 0\
+
+  "we can rewrite as:"\
+
+  {chi_n, chi^dagger_m} = 1/4 [(P_n P^dagger_m) (X_n - i Y_n) (X_m + i Y_m) + (P^dagger_m P_n) (X_m + i Y_m) (X_n - i Y_n)]\
+
+  "and since:"\
+
+  i Z (i Z)^dagger = (i Z)^dagger i Z = - (i Z) (i Z) = -i^2 Z^2 = I\
+
+  "for" n=m "we can rewrite as:"\
   
+  {chi_n, chi^dagger_n} = 1/4 [(X_n - i Y_n) (X_n + i Y_n) + (X_n + i Y_n) (X_n - i Y_n)]\
+  = 1/4 [X_n^2 + Y_n^2 + i[X_n, Y_n] + X_n^2 + Y_n^2 - i[X_n, Y_n]]\
+  = 1/4 [2 X_n^2 + 2 Y_n^2]\
+  = I_(n n) = 1\
+$ <nem>
+$
+  "and for" n != m "assuming" n < m "we can rewrite as:"\
+
+  {chi_n, chi^dagger_m} = (P_n (X_n - i Y_n)/2) (P^dagger_m (X_m + i Y_m)/2) + (P^dagger_m (X_m + i Y_m)/2) (P_n (X_n - i Y_n)/2)\
+
+  "we can the split P_m into two parts:"\
+
+  P^dagger_m = P^dagger_n (i Z_n) P'^dagger_(n,m)\
+
+  "where" P^dagger_n "acts on sites" l<n "and" P'^dagger_(n,m) "acts on sites" n<l<m\
+  "if" F_n = (X_n - i Y_n)/2, F^dagger_m = (X_m + i Y_m)/2 "then:"\
+  
+  {chi_n, chi^dagger_m} = 1/4 [(P_n P^dagger_n) F_n (i Z_n) P'^dagger_(n,m) F^dagger_m + (P^dagger_n P_n) (i Z_n) P'^dagger_(n,m) F^dagger_m F_n]\
+  
+  "since" P_n P^dagger_n = P^dagger_n P_n = I ":"\
+
+  {chi_n, chi^dagger_m} = i/4 [F_n Z_n (P'^dagger_(n,m) F^dagger_m) + Z_n F_n (P'^dagger_(n,m) F^dagger_m)]\
+
+  "and as in" #[@nem], {Z_n, F_n} = 0\
+
+  {chi_n, chi^dagger_m} = i/4 [(-Z_n F_n) (P'^dagger_(n,m) F^dagger_m) + Z_n F_n (P'^dagger_(n,m) F^dagger_m)]\
+  = 0
+$
+
+Therefore, ${chi_n, chi^dagger_m} = delta_(n m)$.
+
+  
+// 1. For $n = m$ the $Z$ strings cancel and the resulting expression is:
+//   $
+//     {chi_n, chi^dagger_n} = 1/2 {(X_n - i Y_n), (X_n + i Y_n)} \
+//   $
+// 2. We can then solve using Pauli matrices:
+//   $
+//     (X - i Y)/2 = mat(0,1;0,0),
+//     (X + i Y)/2 = mat(0,0;0,1)\
+//     1/2 ((X - i Y) (X + i Y) + (X + i Y) (X - i Y)) = mat(1,0;0,1)\
+//     "therefore" chi_n chi^dagger_n + chi^dagger_n chi_n = 1\
+//   $
 
 #bibliography(style: "american-physics-society", "bibliography.bib")
