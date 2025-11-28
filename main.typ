@@ -51,12 +51,116 @@ $gamma^5 = gamma^0 gamma^1$.
 
 Using an adiabatic method @chakraborty2022 or a VQE (@schwinger-vqe) we can prepare a $ket("vac")$ state for the Schwinger model in 1 + 1 dimensions.
 
-Once we have this state, we need to define some creation operators $c^dagger_n "and" c_n$ which must obey @Chai2025:
+Once we have this state, we need to define some creation operators $chi^dagger_n "and" chi_n$ which must obey @Chai2025:
 $
-  {c_n, c^dagger_m} = delta_(n m)
+  {chi_n, chi^dagger_m} = delta_(n m)
+$ <anticommutator>
+
+From the Jordan-Wigner transformation, these creation operators could be represented as:
+$
+  chi_n = (product_(l<n) - i Z_l) (X_n - i Y_n) \
+  chi^dagger_n = (product_(l<n) i Z_l) (X_n + i Y_n)
 $
 
-@Davoudi2024
+Which obeys @anticommutator:
+1. For $n = m$ the $Z$ strings cancel and the resulting expression is:
+  $
+    {chi_n, chi^dagger_n} = 1/2 {(X_n - i Y_n), (X_n + i Y_n)} \
+  $
+2. We can then solve using Pauli matrices:
+  $
+    (X - i Y)/2 = mat(0,1;0,0),
+    (X + i Y)/2 = mat(0,0;0,1)\
+    1/2 ((X - i Y) (X + i Y) + (X + i Y) (X - i Y)) = mat(1,0;0,1)\
+    "therefore" chi_n chi^dagger_n + chi^dagger_n chi_n = 1\
+    "and" chi_n chi^dagger_m + chi^dagger_m chi_n = 0
+  $
+
+Now that we have the creation and annihilation operators, we can create a pair of operators that both act on $ket("vac")$ to create a Gaussian wave packet of either fermions or anti-fermions.
+
+$
+  C^dagger = sum_(n=1)^N f^c_n chi^dagger_n, space D^dagger = sum_(n=1)^N f^d_n chi_n
+$
+
+where $f^(c(d))_n$ is the Gaussian coefficient at site $n$.
+
+$
+  f^c_n (n_0, sigma, k_0) = A^c
+  dot 
+  exp[-(n - n_0)^2 / (4 sigma^2)] dot exp[i k_0 a(n - n_0)]
+  dot
+  sqrt((m_"eff" + w_(k_0))/w_(k_0))
+  dot
+  (Pi_(n 0) + v_(k_0) Pi_(n 1))
+
+  \
+  f^d_n (n_0, sigma, k_0) = A^d
+  dot
+  exp[-(n - n_0)^2 / (4 sigma^2)]
+  dot
+  exp[-i k_0 a(n - n_0)]
+  dot
+  sqrt((m_"eff" + w_(k_0))/w_(k_0))
+  dot
+  (Pi_(n 1) + v_(k_0) Pi_(n 0))
+$
+
+Where A is the normalization constant for the condition $sum_(n=1)^N abs(f_n)^2 = 1$, $n_0$ is the center position of the wave packet, $sigma$ is the standard deviation, $k_0$ is the average momentum of the wave packet, $a$ is the lattice spacing, $m_"eff" = m cos(theta)$ is the effective mass, $w_(k_0) = sqrt((m cos theta)^2 + sin^2 k_0)$ and $v_(k_0) = (sin k_0) / (m cos theta + w_(k_0))$ are the group and phase velocity and $Pi_(n l)$ are the projection operators defined as in @Chai2025:
+$
+  Pi_(n l) = (1 + (-1)^(n+l))/2, space l in {0, 1}
+$
+
+Deriving $A^c$:
+$
+  sum_(n=1)^N abs(
+    A^c
+    dot
+    exp[-(n - n_0)^2 / (4 sigma^2)]
+    dot
+    sqrt((m_"eff" + w_(k_0))/w_(k_0))
+    dot
+    (Pi_(n 0) + v_(k_0) Pi_(n 1))
+    dot
+    underbrace(
+      exp[i k_0 a(n - n_0)],
+      "magnitude of 1"
+    )
+  )^2 = 1\
+
+  (A^c)^2
+  dot
+  sum_(n=1)^N exp[-(n - n_0)^2 / (2 sigma^2)]
+  dot
+  (m_"eff" + w_(k_0))/w_(k_0)
+  dot
+  (Pi_(n 0) + v_(k_0) Pi_(n 1))^2
+  = 1\
+  
+  A^c (N, sigma, n_0) = (
+    sum_(n=1)^N exp[-(n - n_0)^2 / (2 sigma^2)]
+    dot
+    (m_"eff" + w_(k_0))/w_(k_0)
+    dot
+    (Pi_(n 0) + v_(k_0) Pi_(n 1))^2
+  )^(-1/2)
+$
+Which then follows that $A^d$ is:
+$
+  A^d (N, sigma, n_0) = (
+    sum_(n=1)^N exp[-(n - n_0)^2 / (2 sigma^2)]
+    dot
+    (m_"eff" + w_(k_0))/w_(k_0)
+    dot
+    (Pi_(n 1) + v_(k_0) Pi_(n 0))^2
+  )^(-1/2)
+$
+
+We can now use these operators to create a fermion, anti-fermion wave packet on top of the vacuum state:
+$
+  ket(psi(0)) = D^dagger C^dagger ket("vac")
+$
+
+// @Davoudi2024
 
 #show: appendix
 = Additional Information
